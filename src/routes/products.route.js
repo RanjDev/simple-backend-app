@@ -2,6 +2,8 @@ import { Router } from "express";
 import winston from "winston";
 import { isAdmin, isLoggedIn } from "../middleware/auth.middleware.js";
 import Product from "../models/products.model.js";
+import Category from "../models/categories.model.js";
+import Companies from "../models/company.model.js";
 import productValidate from "../validations/product.validate.js";
 
 const productsRoutes = Router();
@@ -9,7 +11,7 @@ const productsRoutes = Router();
 // Products routes
 productsRoutes.get("/products", async (req, res) => {
   try {
-    const products = await Product.find().populate("category");
+    const products = await Product.find().populate(["category", "company"]);
     res.json(products);
   } catch (err) {
     return res.status(400).json({ error: "Could Not Get Products" });
@@ -30,6 +32,19 @@ productsRoutes.post("/products", isLoggedIn, isAdmin, async (req, res) => {
   const newProduct = new Product(req.body);
   const c = req.body.category;
   const ctg = await Category.findOne({ name: c }); //the category that is inserted with post request
+  if (!ctg) {
+    return res.status(400).json({
+      error: `${c} is not a category. Please, choose a valid category.`,
+    });
+  }
+  const comp = req.body.company;
+  const compObj = await Companies.findOne({ name: comp });
+  if (!compObj) {
+    return res.status(400).json({
+      error: "there is no such company, please insert a valid company",
+    });
+  }
+  newProduct.company = compObj;
   newProduct.category = ctg;
   await newProduct.save();
   res.json({ message: "Product Saved" });
@@ -40,7 +55,7 @@ productsRoutes.get("/products/:id", async (req, res) => {
   const { id } = req.params;
   let product;
   try {
-    product = await Product.findById(id).populate("category");
+    product = await Product.findById(id).populate(["category", "company"]);
   } catch (err) {
     return res.status(400).json({ error: "Unkown error" });
   }
@@ -71,10 +86,35 @@ productsRoutes.put("/products/:id", isLoggedIn, isAdmin, async (req, res) => {
     winston.err(`could not update product, error: ${err.message}`);
     return res.status(400).json({ error: err.message });
   }
+
   const { id } = req.params;
+  const c = req.body.category;
+  const ctg = await Category.findOne({ name: c }); //the category that is inserted with post request
+  if (!ctg) {
+    return res.status(400).json({
+      error: `${c} is not a category. Please, choose a valid category.`,
+    });
+  }
+  const comp = req.body.company;
+  const compObj = await Companies.findOne({ name: comp });
+  if (!compObj) {
+    return res.status(400).json({
+      error: "there is no such company, please insert a valid company",
+    });
+  }
+
   await Product.findOneAndUpdate(
     { _id: id },
-    { $set: req.body },
+    {
+      $set: {
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        quantity: req.body.quantity,
+        company: compObj,
+        category: ctg,
+      },
+    },
     { new: true }
   );
   winston.info("product updated");

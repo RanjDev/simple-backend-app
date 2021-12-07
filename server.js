@@ -1,6 +1,5 @@
 import express from "express";
 import mongoose from "mongoose";
-import router from "./src/routes/routes.js";
 import cors from "cors";
 import dotenv from "dotenv";
 import winston from "winston";
@@ -9,6 +8,7 @@ import usersRoutes from "./src/routes/users.route.js";
 import categoriesRoutes from "./src/routes/categories.route.js";
 import productsRoutes from "./src/routes/products.route.js";
 import authRoutes from "./src/routes/auth.route.js";
+import companiesRoutes from "./src/routes/companies.route.js";
 
 dotenv.config("dotenv");
 
@@ -44,11 +44,11 @@ winston.add(
   })
 );
 
-app.use(router);
 app.use(usersRoutes);
 app.use(categoriesRoutes);
 app.use(productsRoutes);
 app.use(authRoutes);
+app.use(companiesRoutes);
 
 app.listen(process.env.PORT, () => {
   // winston.info("server started");
