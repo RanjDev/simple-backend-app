@@ -24,6 +24,7 @@ const productValidate = Joi.object({
   }),
   company: Joi.any(),
   category: Joi.any(),
+  Image: Joi.any(),
 });
 
 export default productValidate;

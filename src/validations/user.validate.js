@@ -31,7 +31,7 @@ const userValidated = Joi.object({
       "string.empty": `"Password" cannot be an empty field`,
       "string.pattern.base": `"Password" must be 8-30 characters, and include capital and small letters, numbers, and a symbol.`,
     }),
-  role: Joi.string().min(4).max(255).required(),
+  role: Joi.string().min(4).max(255),
 });
 
 export default userValidated;

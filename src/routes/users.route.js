@@ -7,7 +7,7 @@ import userValidate from "../validations/user.validate.js";
 const usersRoutes = Router();
 
 // User routes
-usersRoutes.get("/users", isLoggedIn, isAdmin, async (req, res) => {
+usersRoutes.get("/users", async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -16,7 +16,7 @@ usersRoutes.get("/users", isLoggedIn, isAdmin, async (req, res) => {
   }
 });
 
-usersRoutes.post("/users", isLoggedIn, isAdmin, async (req, res) => {
+usersRoutes.post("/users", async (req, res) => {
   try {
     await userValidate.validateAsync(req.body);
   } catch (err) {

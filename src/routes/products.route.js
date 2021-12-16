@@ -5,6 +5,26 @@ import Product from "../models/products.model.js";
 import Category from "../models/categories.model.js";
 import Companies from "../models/company.model.js";
 import productValidate from "../validations/product.validate.js";
+import multer from "multer";
+// import cloudinary from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import dotenv from "dotenv";
+
+dotenv.config("dotenv");
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "ecommerce",
+  },
+});
+const upload = multer({ storage: storage });
 
 const productsRoutes = Router();
 
@@ -18,7 +38,8 @@ productsRoutes.get("/products", async (req, res) => {
   }
 });
 
-productsRoutes.post("/products", isLoggedIn, isAdmin, async (req, res) => {
+productsRoutes.post("/products", upload.single("image"), async (req, res) => {
+  // console.log(req.file.path);
   try {
     await productValidate.validateAsync(req.body);
   } catch (err) {
@@ -27,7 +48,6 @@ productsRoutes.post("/products", isLoggedIn, isAdmin, async (req, res) => {
     return res.status(400).json({ error: err.message });
   }
   // if validation was alll good then proceeds
-
   // conditions to prevent save when category is not find********************
   const newProduct = new Product(req.body);
   const c = req.body.category;
@@ -46,6 +66,7 @@ productsRoutes.post("/products", isLoggedIn, isAdmin, async (req, res) => {
   }
   newProduct.company = compObj;
   newProduct.category = ctg;
+  newProduct.image = req.file.path;
   await newProduct.save();
   res.json({ message: "Product Saved" });
   winston.info("product added");
@@ -64,8 +85,7 @@ productsRoutes.get("/products/:id", async (req, res) => {
 
 productsRoutes.delete(
   "/products/:id",
-  isLoggedIn,
-  isAdmin,
+
   async (req, res) => {
     const { id } = req.params;
     try {
@@ -79,29 +99,29 @@ productsRoutes.delete(
   }
 );
 
-productsRoutes.put("/products/:id", isLoggedIn, isAdmin, async (req, res) => {
+productsRoutes.put("/products/:id", async (req, res) => {
   try {
     await productValidate.validateAsync(req.body);
   } catch (err) {
-    winston.err(`could not update product, error: ${err.message}`);
+    winston.error(`could not update product, error: ${err.message}`);
     return res.status(400).json({ error: err.message });
   }
 
   const { id } = req.params;
-  const c = req.body.category;
-  const ctg = await Category.findOne({ name: c }); //the category that is inserted with post request
-  if (!ctg) {
-    return res.status(400).json({
-      error: `${c} is not a category. Please, choose a valid category.`,
-    });
-  }
-  const comp = req.body.company;
-  const compObj = await Companies.findOne({ name: comp });
-  if (!compObj) {
-    return res.status(400).json({
-      error: "there is no such company, please insert a valid company",
-    });
-  }
+  // const c = req.body.category;
+  // const ctg = await Category.findOne({ name: c }); //the category that is inserted with post request
+  // if (!ctg) {
+  //   return res.status(400).json({
+  //     error: `${c} is not a category. Please, choose a valid category.`,
+  //   });
+  // }
+  // const comp = req.body.company;
+  // const compObj = await Companies.findOne({ name: comp });
+  // if (!compObj) {
+  //   return res.status(400).json({
+  //     error: "there is no such company, please insert a valid company",
+  //   });
+  // }
 
   await Product.findOneAndUpdate(
     { _id: id },
@@ -111,8 +131,8 @@ productsRoutes.put("/products/:id", isLoggedIn, isAdmin, async (req, res) => {
         description: req.body.description,
         price: req.body.price,
         quantity: req.body.quantity,
-        company: compObj,
-        category: ctg,
+        // company: compObj,
+        // category: ctg,
       },
     },
     { new: true }
