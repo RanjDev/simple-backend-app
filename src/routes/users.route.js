@@ -3,6 +3,7 @@ import winston from "winston";
 import { isAdmin, isLoggedIn } from "../middleware/auth.middleware.js";
 import User from "../models/user.model.js";
 import userValidate from "../validations/user.validate.js";
+import bcrypt from "bcryptjs";
 
 const usersRoutes = Router();
 
@@ -23,8 +24,22 @@ usersRoutes.post("/users", async (req, res) => {
     winston.error(`could not add user, error: ${err.message}`);
     return res.status(500).json({ error: err.message });
   }
+
+  let userEmail = await User.findOne({ email: req.body.email });
+
+  if (userEmail) {
+    return res
+      .status(400)
+      .json({ error: "This email already exists, try a new email" });
+  }
   const newUser = new User(req.body);
+
+  var salt = bcrypt.genSaltSync(10);
+  var hash = bcrypt.hashSync(req.body.password, salt);
+
+  newUser.password = hash;
   await newUser.save();
+
   winston.info("user added");
   res.json({ message: "New User Added" });
 });
