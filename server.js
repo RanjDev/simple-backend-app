@@ -9,6 +9,7 @@ import categoriesRoutes from "./src/routes/categories.route.js";
 import productsRoutes from "./src/routes/products.route.js";
 import authRoutes from "./src/routes/auth.route.js";
 import companiesRoutes from "./src/routes/companies.route.js";
+import searchRoute from "./src/routes/search.route.js";
 
 dotenv.config("dotenv");
 
@@ -49,6 +50,7 @@ app.use(categoriesRoutes);
 app.use(productsRoutes);
 app.use(authRoutes);
 app.use(companiesRoutes);
+app.use(searchRoute);
 
 app.listen(process.env.PORT, () => {
   // winston.info("server started");
