@@ -16,7 +16,7 @@ categoriesRoutes.get("/categories", async (req, res) => {
   }
 });
 
-categoriesRoutes.post("/categories", async (req, res) => {
+categoriesRoutes.post("/categories", isLoggedIn, isAdmin, async (req, res) => {
   try {
     await categoryValidate.validateAsync(req.body);
   } catch (err) {

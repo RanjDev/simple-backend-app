@@ -15,7 +15,7 @@ companiesRoutes.get("/companies", async (req, res) => {
   }
 });
 
-companiesRoutes.post("/companies", async (req, res) => {
+companiesRoutes.post("/companies", isLoggedIn, isAdmin, async (req, res) => {
   try {
     await companiesValidate.validateAsync(req.body);
   } catch (err) {

@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 const usersRoutes = Router();
 
 // User routes
-usersRoutes.get("/users", async (req, res) => {
+usersRoutes.get("/users", isLoggedIn, isAdmin, async (req, res) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -17,7 +17,7 @@ usersRoutes.get("/users", async (req, res) => {
   }
 });
 
-usersRoutes.post("/users", async (req, res) => {
+usersRoutes.post("/users", isLoggedIn, isAdmin, async (req, res) => {
   try {
     await userValidate.validateAsync(req.body);
   } catch (err) {
